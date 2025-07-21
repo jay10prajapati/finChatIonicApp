@@ -1,0 +1,7 @@
+{
+  "name": "finChatIonicApp",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular-standalone"
+}
