@@ -87,7 +87,7 @@ export class HomePage implements OnInit {
   chatError: string | null = null;
   
   // Gemini API configuration
-  private GEMINI_API_KEY = 'AIzaSyB3qAtu0dau_veUT9c5jhfQ15hZoMdpQ6A'; // You'll update this later
+  private GEMINI_API_KEY = 'YOUR_GEMINI_API_KEY_HERE'; // You'll update this later
   private GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
 
   constructor(private http: HttpClient) {
