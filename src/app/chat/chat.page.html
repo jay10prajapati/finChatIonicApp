@@ -1,0 +1,173 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="toggleSidebar()" fill="clear">
+        <ion-icon name="menu-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>
+      {{ currentConversation?.title || 'Financial Assistant' }}
+    </ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="startNewChat()" fill="clear">
+        <ion-icon name="add-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<div class="chat-layout">
+  <!-- Sidebar -->
+  <div class="sidebar" [class.sidebar-open]="sidebarOpen">
+    <div class="sidebar-header">
+      <h3>Financial Chats</h3>
+      <ion-button fill="clear" size="small" (click)="startNewChat()">
+        <ion-icon name="add-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+    </div>
+
+    <div class="conversation-list">
+      <div class="conversation-group">
+        <h4>Today</h4>
+        <div 
+          *ngFor="let conversation of todayConversations"
+          class="conversation-item"
+          [class.active]="currentConversation?.id === conversation.id"
+          (click)="selectConversation(conversation)">
+          <div class="conversation-title">{{ conversation.title }}</div>
+          <div class="conversation-preview">{{ conversation.lastMessage }}</div>
+          <div class="conversation-time">{{ conversation.time }}</div>
+        </div>
+      </div>
+
+      <div class="conversation-group">
+        <h4>Yesterday</h4>
+        <div 
+          *ngFor="let conversation of yesterdayConversations"
+          class="conversation-item"
+          [class.active]="currentConversation?.id === conversation.id"
+          (click)="selectConversation(conversation)">
+          <div class="conversation-title">{{ conversation.title }}</div>
+          <div class="conversation-preview">{{ conversation.lastMessage }}</div>
+          <div class="conversation-time">{{ conversation.time }}</div>
+        </div>
+      </div>
+
+      <div class="conversation-group">
+        <h4>This Week</h4>
+        <div 
+          *ngFor="let conversation of thisWeekConversations"
+          class="conversation-item"
+          [class.active]="currentConversation?.id === conversation.id"
+          (click)="selectConversation(conversation)">
+          <div class="conversation-title">{{ conversation.title }}</div>
+          <div class="conversation-preview">{{ conversation.lastMessage }}</div>
+          <div class="conversation-time">{{ conversation.time }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Chat Area -->
+  <div class="main-chat-area" [class.sidebar-open]="sidebarOpen">
+    <ion-content [fullscreen]="true">
+      <!-- Chat Messages Area -->
+      <div class="chat-container">
+        <div *ngFor="let message of currentMessages" class="message-item" [class]="message.type">
+          <div class="message-content">
+            <div class="message-text" [innerHTML]="message.formattedText"></div>
+            <span class="message-time">{{ message.time }}</span>
+            
+            <!-- Follow-up Questions -->
+            <div *ngIf="message.followUpQuestions && message.followUpQuestions.length > 0" class="follow-up-questions">
+              <p class="follow-up-label">Suggested questions:</p>
+              <div class="question-buttons">
+                <ion-button 
+                  *ngFor="let question of message.followUpQuestions"
+                  fill="outline" 
+                  size="small" 
+                  class="follow-up-btn"
+                  (click)="sendFollowUpQuestion(question)">
+                  {{ question }}
+                </ion-button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- AI Typing Indicator -->
+        <div *ngIf="isAiTyping" class="message-item received">
+          <div class="message-content typing-indicator">
+            <div class="typing-dots">
+              <ion-spinner name="dots" color="primary"></ion-spinner>
+              <span>Financial Assistant is typing...</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </ion-content>
+
+    <!-- Chat Input Footer -->
+    <ion-footer>
+      <ion-toolbar>
+        <div class="chat-input-container">
+          <!-- Attachment Options -->
+          <div class="attachment-section">
+            <ion-button fill="clear" size="small" class="attachment-btn" (click)="openAttachmentOptions()">
+              <ion-icon name="add-circle-outline" slot="icon-only"></ion-icon>
+            </ion-button>
+          </div>
+
+          <!-- Message Input -->
+          <div class="message-input-section">
+            <ion-item lines="none" class="message-input-item">
+              <ion-textarea 
+                [(ngModel)]="messageText"
+                placeholder="Ask about investments, schemes, taxes..."
+                rows="1"
+                autoGrow="true"
+                class="message-input"
+                [disabled]="isAiTyping"
+                (keypress)="onKeyPress($event)">
+              </ion-textarea>
+            </ion-item>
+          </div>
+
+          <!-- Send/Voice Button -->
+          <div class="send-section">
+            <ion-button 
+              *ngIf="messageText.trim().length > 0; else voiceButton"
+              fill="clear" 
+              size="small" 
+              class="send-btn"
+              [disabled]="isAiTyping"
+              (click)="sendMessage()">
+              <ion-icon name="send" slot="icon-only"></ion-icon>
+            </ion-button>
+            <ng-template #voiceButton>
+              <ion-button 
+                fill="clear" 
+                size="small" 
+                class="voice-btn"
+                [disabled]="isAiTyping"
+                (click)="startVoiceRecording()">
+                <ion-icon name="mic-outline" slot="icon-only"></ion-icon>
+              </ion-button>
+            </ng-template>
+          </div>
+        </div>
+      </ion-toolbar>
+    </ion-footer>
+  </div>
+</div>
+
+<!-- Sidebar Overlay for Mobile -->
+<div class="sidebar-overlay" [class.show]="sidebarOpen" (click)="closeSidebar()"></div>
+
+<!-- Attachment Options Modal -->
+<ion-action-sheet 
+  [isOpen]="showAttachmentOptions" 
+  header="Choose Attachment"
+  (didDismiss)="showAttachmentOptions = false"
+  [buttons]="attachmentButtons">
+</ion-action-sheet> 
